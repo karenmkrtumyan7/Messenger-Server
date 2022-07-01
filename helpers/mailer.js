@@ -5,13 +5,13 @@ async function mailer(email, firstName, userId) {
   let transporter = nodemailer.createTransport({
     service: 'outlook',
     auth: {
-      user: 'formyownproject@outlook.com',
+      user: 'myprojectproject@outlook.com',
       pass: 'messi1000',
     }
   });
 
   let info = await transporter.sendMail({
-    from: 'Project 👻 <formyownproject@outlook.com>',
+    from: 'Project 👻 <myprojectproject@outlook.com>',
     to: email, 
     subject: 'Activation Link', 
     text: `Hello ${firstName}.Thank you for registering at ${domain}. Please click on the link below to complete your

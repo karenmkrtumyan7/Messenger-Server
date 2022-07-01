@@ -40,8 +40,9 @@ async function signIn({ userName, password }) {
     return { token, userId }
 }
 
-async function signUp({ email, password, userName }) {
+async function signUp({ email, password, userName, contact }) {
     const emailCandidate = await User.findOne({ email });
+    console.log(contact);
 
     if (emailCandidate) {
         throw ({ 
@@ -58,7 +59,7 @@ async function signUp({ email, password, userName }) {
     }
 
     const hashedPassword  = await bcrypt.hash(password, 12);
-    const user = new User({ email, password: hashedPassword, userName });
+    const user = new User({ email, password: hashedPassword, userName, contact });
     const userId = user.id;
 
     await user.save();

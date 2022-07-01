@@ -14,7 +14,7 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/auth', authControllers);
-app.use('/user', userControllers);
+app.use('/users', userControllers);
 app.use(errorHandler);
 
 const PORT = process.env.PORT;
