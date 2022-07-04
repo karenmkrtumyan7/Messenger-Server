@@ -5,7 +5,7 @@ async function getCurrent(userId, token) {
 }
 
 async function getUsers() {
-    const usersCollection = await User.find().select(['userName', 'email', 'createdAt']);
+    const usersCollection = await User.find().select(['userName', 'email', 'createdAt', 'contact']);
     return usersCollection;
 }
 

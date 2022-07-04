@@ -3,7 +3,7 @@ const router = express.Router();
 const userService = require('../services/user.service');
 const auth = require('../middlewares/auth.middleware');
 
-router.get('/', getUsers);
+router.get('/', auth, getUsers);
 router.get('/current/:id', auth, getCurrent);
 
 function getCurrent(req, res) {
