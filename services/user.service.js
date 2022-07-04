@@ -9,7 +9,18 @@ async function getUsers() {
     return usersCollection;
 }
 
+async function deleteUser(userId) {
+    const deleteCandidate = await User.findById(userId);
+
+    if (!deleteCandidate) {
+        throw { msg: 'No user found' };
+    }
+    await deleteCandidate.deleteOne();
+    return { msg: 'User successfully deleted' }
+}
+
 module.exports = {
     getCurrent,
-    getUsers
+    getUsers,
+    deleteUser
 }
