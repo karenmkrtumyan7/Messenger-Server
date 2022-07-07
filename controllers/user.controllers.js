@@ -3,9 +3,9 @@ const router = express.Router();
 const userService = require('../services/user.service');
 const auth = require('../middlewares/auth.middleware');
 
-router.get('/', getUsers);
-router.delete('/:id', deleteUser);
-router.put('/', editUser);
+router.get('/', auth, getUsers);
+router.delete('/:id', auth, deleteUser);
+router.put('/', auth, editUser);
 router.get('/:id', auth, getCurrent);
 
 function getCurrent(req, res) {
@@ -22,7 +22,7 @@ function getUsers(req, res) {
 function deleteUser(req, res) {
     userService.deleteUser(req.params.id, res)
         .then(data => res.json(data))
-        .catch(err => res.status(401).json(err))
+        .catch(err => res.status(500).json(err))
 }
 
 function editUser(req, res) {
