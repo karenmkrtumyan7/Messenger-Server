@@ -4,25 +4,38 @@ async function getCurrent(userId, token) {
     return { userId, token }
 }
 
-async function getUsers(req, res, next) {
+async function getUsers(req, res) {
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit);
-
-
     const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-
-    const usersCount = await User.countDocuments().exec();
+    const usersCount = await User.count();
     const results = { count: usersCount };
+    const aggregateParams = [
+        { $limit : limit },
+        { $skip : startIndex },
+        {
+            $project : {
+                _id: "$_id",
+                key: "$_id",
+                userName: "$userName",
+                contact: "$contact",
+                email: "$email",
+                createdAt:  {
+                    $dateToString: {
+                        format:"%Y-%m-%d",
+                        date:"$createdAt"
+                    }
+                },
+            },
+        },
+    ];
 
     try {
-        const credientails = ['userName', 'email', 'createdAt', 'contact'];
-        results.data = await User.find().select(credientails).limit(limit).skip(startIndex).exec();
-        res.paginatedResults = results;
+        results.data = await User.aggregate(aggregateParams);
+        return results;
     } catch (e) {
         res.status(500).json({ message: e.message });
     }
-    return results;
 }
 
 async function deleteUser(userId, res) {
@@ -40,8 +53,9 @@ async function deleteUser(userId, res) {
 }
 
 async function editUser(req, res) {
-    const { edit } = req.body;
-    const id = edit._id || edit.id;
+    const { userName, contact, email } = req.body;
+    const { id } = req.params;
+    console.log(req.body);
     try {
         const editCandidate =  await User.findById(id);
 
@@ -49,7 +63,7 @@ async function editUser(req, res) {
             return { msg: "Something broke" };
         }
 
-        await editCandidate.updateOne(edit);
+        await editCandidate.updateOne({ userName, contact, email });
 
         return { msg: "Successfully Update" };
     } catch (e) {

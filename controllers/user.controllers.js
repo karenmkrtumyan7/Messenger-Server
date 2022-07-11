@@ -5,7 +5,7 @@ const auth = require('../middlewares/auth.middleware');
 
 router.get('/', auth, getUsers);
 router.delete('/:id', auth, deleteUser);
-router.put('/', auth, editUser);
+router.put('/:id', auth, editUser);
 router.get('/:id', auth, getCurrent);
 
 function getCurrent(req, res) {
@@ -16,19 +16,19 @@ function getCurrent(req, res) {
 function getUsers(req, res) {
     userService.getUsers(req, res)
         .then(data => res.json(data))
-        .catch(err => res.status(401).json(err));
+        .catch(err => res.status(400).json(err));
 }
 
 function deleteUser(req, res) {
     userService.deleteUser(req.params.id, res)
         .then(data => res.json(data))
-        .catch(err => res.status(500).json(err))
+        .catch(err => res.status(400).json(err))
 }
 
 function editUser(req, res) {
     userService.editUser(req, res)
         .then(data => res.json(data))
-        .catch(err => res.status(500).json(err))
+        .catch(err => res.status(400).json(err))
 }
 
 module.exports = router;
