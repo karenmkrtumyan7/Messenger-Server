@@ -42,7 +42,6 @@ async function signIn({ userName, password }) {
 
 async function signUp({ email, password, userName, contact }) {
     const emailCandidate = await User.findOne({ email });
-    console.log(contact);
 
     if (emailCandidate) {
         throw ({ 
@@ -70,7 +69,6 @@ async function signUp({ email, password, userName, contact }) {
 
 async function verifyAccount({ id }) {
     let candidate;
-
     try {
         candidate = await User.findById(id);
     } catch {

@@ -8,11 +8,11 @@ async function getUsers(req, res) {
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit);
     const startIndex = (page - 1) * limit;
-    const usersCount = await User.count();
+    const usersCount = await User.countDocuments();
     const results = { count: usersCount };
     const aggregateParams = [
-        { $limit : limit },
         { $skip : startIndex },
+        { $limit : limit },
         {
             $project : {
                 _id: "$_id",
@@ -55,7 +55,6 @@ async function deleteUser(userId, res) {
 async function editUser(req, res) {
     const { userName, contact, email } = req.body;
     const { id } = req.params;
-    console.log(req.body);
     try {
         const editCandidate =  await User.findById(id);
 
