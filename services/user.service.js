@@ -1,3 +1,4 @@
+const moment = require('moment');
 const { User } = require('../helpers/db');
 
 async function getCurrent(userId, token) {
@@ -12,7 +13,6 @@ async function getUsers(req, res) {
     const results = { count: usersCount };
     const aggregateParams = [
         { $skip : startIndex },
-        { $limit : limit },
         {
             $project : {
                 _id: "$_id",
@@ -29,6 +29,40 @@ async function getUsers(req, res) {
             },
         },
     ];
+    const { userName, contact, email, createdAt } = req.query;
+
+    const getFormattedDate = (date) => moment(date)
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
+
+    if (userName) {
+        aggregateParams.push({
+            $match: { userName }
+        })
+    }
+
+    if (contact) {
+        aggregateParams.push({
+            $match: { contact },
+        });
+    }
+
+    if (email) {
+        aggregateParams.push({
+            $match: { email },
+        });
+    }
+
+    if (createdAt) {
+        aggregateParams.push({
+            $match: { createdAt: getFormattedDate(createdAt) },
+        })
+    }
+
+    aggregateParams.push({
+        $limit : limit ,
+    })
 
     try {
         results.data = await User.aggregate(aggregateParams);

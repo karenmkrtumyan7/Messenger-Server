@@ -3,7 +3,7 @@ const router = express.Router();
 const userService = require('../services/user.service');
 const auth = require('../middlewares/auth.middleware');
 
-router.get('/', auth, getUsers);
+router.get('/', getUsers);
 router.delete('/:id', auth, deleteUser);
 router.put('/:id', auth, editUser);
 router.get('/:id', auth, getCurrent);
