@@ -11,6 +11,7 @@ async function getUsers(req, res) {
     const startIndex = (page - 1) * limit;
     const usersCount = await User.countDocuments();
     const results = { count: usersCount };
+
     const aggregateParams = [
         { $skip : startIndex },
         {
@@ -24,11 +25,12 @@ async function getUsers(req, res) {
                     $dateToString: {
                         format:"%Y-%m-%d",
                         date:"$createdAt"
-                    }
+                    },
                 },
             },
-        },
+        }
     ];
+
     const { userName, contact, email, createdAt } = req.query;
 
     const getFormattedDate = (date) => moment(date)
@@ -60,9 +62,11 @@ async function getUsers(req, res) {
         })
     }
 
-    aggregateParams.push({
-        $limit : limit ,
-    })
+    if (limit) {
+        aggregateParams.push({
+            $limit : limit ,
+        })
+    }
 
     try {
         results.data = await User.aggregate(aggregateParams);
