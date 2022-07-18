@@ -6,13 +6,14 @@ module.exports = async (req, res, next) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = await jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decodedToken.userid;
+    const { userId, role } = decodedToken;
 
     if (req.params.userid && req.params.userid !== userId) {
       throw 'Invalid request';
     } else {
       req.token = token;
       req.userId = userId;
+      req.role = role
       next();
     }
   } catch(err) {

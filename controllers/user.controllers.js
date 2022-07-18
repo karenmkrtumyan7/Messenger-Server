@@ -1,14 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const userService = require('../services/user.service');
-const auth = require('../middlewares/auth.middleware');
+const verifyJWT = require('../middlewares/auth.middleware');
+const verifyROLE = require('../middlewares/verifyRole');
+const { ADMIN, USER, MODERATOR } = require('../config/roles');
 
-router.get('/', getUsers);
-router.delete('/:id', auth, deleteUser);
-router.put('/:id', auth, editUser);
-router.get('/:id', auth, getCurrent);
+router.get('/', verifyJWT, getUsers);
+router.delete('/:id', verifyJWT, verifyROLE(ADMIN), deleteUser);
+router.put('/:id', verifyJWT, editUser);
+router.get('/:id', verifyJWT, getUserDetails);
 
-function getCurrent(req, res) {
+function getUserDetails(req, res) {
     userService.getCurrent(req.userId, req.token)
         .then(data => res.json(data));
 }

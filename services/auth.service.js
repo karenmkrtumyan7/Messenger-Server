@@ -1,4 +1,4 @@
-const { User } = require('../helpers/db');
+const { User, Role, Permission } = require('../helpers/db');
 const bcrypt = require('bcryptjs');
 const mailer = require('../helpers/mailer');
 const jwt = require('jsonwebtoken');
@@ -8,7 +8,7 @@ dotenv();
 
 module.exports = {
     signIn,
-    signUp, 
+    signUp,
     verifyAccount
 }
 
@@ -18,10 +18,10 @@ async function signIn({ userName, password }) {
     if (!candidate) {
         throw { msg: 'Uncorrect username or password.' };
     }
-    
+
     const hashedPassword = candidate.password;
     const isPasswordCorrect  = await bcrypt.compare(password, hashedPassword);
-                
+
     if (!isPasswordCorrect) {
         throw { msg: 'Uncorrect username or password' };
     }
@@ -32,7 +32,7 @@ async function signIn({ userName, password }) {
 
     const userId = candidate.id;
     const token = await jwt.sign(
-        { userId },
+        { userId, role: candidate.role },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN }
     );
@@ -44,12 +44,12 @@ async function signUp({ email, password, userName, contact }) {
     const emailCandidate = await User.findOne({ email });
 
     if (emailCandidate) {
-        throw ({ 
+        throw ({
             msg: 'The email address is already in use by another account.',
         });
     }
 
-    const userNameCandidate = await User.findOne({ userName }); 
+    const userNameCandidate = await User.findOne({ userName });
 
     if (userNameCandidate) {
         throw ({
@@ -58,10 +58,12 @@ async function signUp({ email, password, userName, contact }) {
     }
 
     const hashedPassword  = await bcrypt.hash(password, 12);
-    const user = new User({ email, password: hashedPassword, userName, contact });
+    const permissions = new Permission();
+    const userRole = new Role({ value: 'User', isAdmin: false, permissions });
+    const user = new User({ email, password: hashedPassword, userName, contact, role: userRole });
     const userId = user.id;
 
-    await user.save();
+    await Promise.all([permissions.save, userRole.save, user.save]);
     mailer(email, userName, userId);
 
     return { msg: 'Verify your account.'}

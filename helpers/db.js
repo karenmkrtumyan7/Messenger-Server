@@ -5,5 +5,7 @@ dotenv.config();
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true });
 
 module.exports = {
-    User: require('../models/user.model')
+    User: require('../models/user.model'),
+    Role: require('../models/role.model'),
+    Permission: require('../models/permission.model'),
 };
