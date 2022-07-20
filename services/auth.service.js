@@ -63,7 +63,9 @@ async function signUp({ email, password, userName, contact }) {
     const user = new User({ email, password: hashedPassword, userName, contact, role: userRole });
     const userId = user.id;
 
-    await Promise.all([permissions.save, userRole.save, user.save]);
+    await permissions.save();
+    await userRole.save();
+    await user.save()
     mailer(email, userName, userId);
 
     return { msg: 'Verify your account.'}

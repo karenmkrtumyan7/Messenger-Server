@@ -1,14 +1,23 @@
 const moment = require('moment');
 const { User } = require('../helpers/db');
 
-async function getCurrent(userId, token) {
-    return { userId, token }
+async function getUserDetails(req, res) {
+    const userDetails = User.findById(req.params.id).find()
+      .populate({
+          path: 'role',
+          select: 'value isAdmin -_id',
+          populate: {
+              path: 'permissions',
+              select: '-_id'
+          }
+      });
+    return userDetails;
 }
 
 async function getUsers(req, res) {
     const page = parseInt(req.query.page);
-    const limit = parseInt(req.query.limit);
-    const startIndex = (page - 1) * limit;
+    const pageSize = parseInt(req.query.pageSize);
+    const startIndex = (page - 1) * pageSize;
     const usersCount = await User.countDocuments();
     const results = { count: usersCount };
 
@@ -111,7 +120,7 @@ async function editUser(req, res) {
 
 
 module.exports = {
-    getCurrent,
+    getUserDetails,
     getUsers,
     deleteUser,
     editUser
