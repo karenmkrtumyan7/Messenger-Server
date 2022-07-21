@@ -2,8 +2,9 @@ const moment = require('moment');
 const { User } = require('../helpers/db');
 
 async function getUserDetails(req, res) {
-    const userDetails = User.findById(req.params.id).find()
+    const userDetails = await User.findById(req.userId).select('-password').find()
       .populate({
+          select: '-password',
           path: 'role',
           select: 'value isAdmin -_id',
           populate: {
@@ -11,7 +12,7 @@ async function getUserDetails(req, res) {
               select: '-_id'
           }
       });
-    return userDetails;
+    return userDetails[0];
 }
 
 async function getUsers(req, res) {
@@ -71,9 +72,9 @@ async function getUsers(req, res) {
         })
     }
 
-    if (limit) {
+    if (pageSize) {
         aggregateParams.push({
-            $limit : limit ,
+            $limit : pageSize ,
         })
     }
 

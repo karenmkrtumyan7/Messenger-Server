@@ -6,7 +6,7 @@ const verifyJWT = require('../middlewares/auth.middleware');
 router.get('/', verifyJWT, getUsers);
 router.delete('/:id', verifyJWT, deleteUser);
 router.put('/:id', verifyJWT, editUser);
-router.get('/:id', getUserDetails);
+router.get('/details', verifyJWT, getUserDetails);
 
 function getUserDetails(req, res) {
     userService.getUserDetails(req, res)
