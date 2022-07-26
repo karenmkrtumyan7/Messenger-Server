@@ -7,11 +7,26 @@ router.get('/', verifyJWT, getUsers);
 router.delete('/:id', verifyJWT, deleteUser);
 router.put('/:id', verifyJWT, editUser);
 router.get('/details', verifyJWT, getUserDetails);
+router.get('/:id', getUser);
+router.put('/updatePermissions/:id', updatePermissions);
+
+function updatePermissions(req, res) {
+    userService.updatePermissions(req, res)
+      .then(data => res.json(data))
+      .catch(err => res.status(404).json(err));
+}
+
 
 function getUserDetails(req, res) {
     userService.getUserDetails(req, res)
         .then(data => res.json(data))
         .catch(err => res.status(404).json(err));
+}
+
+function getUser(req, res) {
+    userService.getUser(req, res)
+      .then(data => res.json(data))
+      .catch(err => res.status(404).json(err));
 }
 
 function getUsers(req, res) {

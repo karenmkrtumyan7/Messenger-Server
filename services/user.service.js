@@ -1,5 +1,6 @@
 const moment = require('moment');
-const { User } = require('../helpers/db');
+const { User, Permission } = require('../helpers/db');
+const _ = require('lodash');
 
 async function getUserDetails(req, res) {
     const userDetails = await User.findById(req.userId).select('-password').find()
@@ -13,6 +14,18 @@ async function getUserDetails(req, res) {
           }
       });
     return userDetails[0];
+}
+
+async function getUser(req) {
+    const userDetails = await User.findById(req.params.id).select('email  userName contact  verified createdAt')
+      .find()
+      .populate({
+          path: 'role',
+          select: 'value',
+      });
+    const formatUser = _.pick(userDetails[0], ['email', 'createdAt', 'userName', 'contact', 'verified']);
+    formatUser.role = _.get(userDetails, '[0].role.value')
+    return formatUser;
 }
 
 async function getUsers(req, res) {
@@ -119,10 +132,39 @@ async function editUser(req, res) {
 
 }
 
+async function updatePermissions(req, res) {
+    const { id } = req.params;
+
+    const updateFields = { VIEW: true, CREATE: true, EDIT: true, DELETE: false };
+
+    try {
+        const userDetails = await User.findById(id).select('-password').find()
+          .populate({
+              path: 'role',
+              populate: {
+                  path: 'permissions',
+              }
+          });
+
+        if (!userDetails[0]) {
+            return { msg: "Something broke" };
+        }
+
+        await Permission.updateOne({ _id: userDetails[0].role.permissions._id }, { users: updateFields });
+
+
+        return { msg: "Successfully Update" };
+    } catch (e) {
+        res.status(500).json({ msg: e.message });
+    }
+
+}
 
 module.exports = {
     getUserDetails,
     getUsers,
+    getUser,
     deleteUser,
-    editUser
+    editUser,
+    updatePermissions,
 }

@@ -2,10 +2,10 @@ const { Schema, model } = require('mongoose');
 
 const Permission = new Schema({
   users: {
-    view: { type: Boolean, default: true, required: true },
-    create: { type: Boolean, default: false, required: true },
-    edit: { type: Boolean, default: false, required: true },
-    delete: { type: Boolean, default: false, required: true },
+    VIEW: { type: Boolean, default: true, required: true },
+    CREATE: { type: Boolean, default: false, required: true },
+    EDIT: { type: Boolean, default: false, required: true },
+    DELETE: { type: Boolean, default: false, required: true },
   }
 });
 
