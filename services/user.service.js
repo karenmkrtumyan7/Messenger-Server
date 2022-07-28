@@ -134,8 +134,7 @@ async function editUser(req, res) {
 
 async function updatePermissions(req, res) {
     const { id } = req.params;
-
-    const updateFields = { VIEW: true, CREATE: true, EDIT: true, DELETE: false };
+    const { updatePermissionsData } = req.body;
 
     try {
         const userDetails = await User.findById(id).select('-password').find()
@@ -150,14 +149,34 @@ async function updatePermissions(req, res) {
             return { msg: "Something broke" };
         }
 
-        await Permission.updateOne({ _id: userDetails[0].role.permissions._id }, { users: updateFields });
-
+        await Permission.updateOne({ _id: userDetails[0].role.permissions._id }, { users: updatePermissionsData });
 
         return { msg: "Successfully Update" };
     } catch (e) {
         res.status(500).json({ msg: e.message });
     }
+}
 
+async function getPermissions(req, res) {
+    const { id } = req.params;
+
+    try {
+        const userDetails = await User.findById(id).select('-password').find()
+          .populate({
+              path: 'role',
+              populate: {
+                  path: 'permissions',
+              }
+          });
+
+        if (!userDetails[0]) {
+            return { msg: "Something broke" };
+        }
+
+        return _.get(userDetails[0], 'role.permissions');
+    } catch (e) {
+        res.status(500).json({ msg: e.message });
+    }
 }
 
 module.exports = {
@@ -167,4 +186,5 @@ module.exports = {
     deleteUser,
     editUser,
     updatePermissions,
+    getPermissions,
 }

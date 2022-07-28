@@ -3,12 +3,20 @@ const router = express.Router();
 const userService = require('../services/user.service');
 const verifyJWT = require('../middlewares/auth.middleware');
 
+router.put('/:id/updatePermissions', updatePermissions);
+router.get('/:id/updatePermissions', getPermissions);
 router.get('/', verifyJWT, getUsers);
 router.delete('/:id', verifyJWT, deleteUser);
 router.put('/:id', verifyJWT, editUser);
 router.get('/details', verifyJWT, getUserDetails);
 router.get('/:id', getUser);
-router.put('/updatePermissions/:id', updatePermissions);
+
+
+function getPermissions(req, res) {
+    userService.getPermissions(req, res)
+      .then(data => res.json(data))
+      .catch(err => res.status(404).json(err));
+}
 
 function updatePermissions(req, res) {
     userService.updatePermissions(req, res)
