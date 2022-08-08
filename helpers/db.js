@@ -8,4 +8,6 @@ module.exports = {
     User: require('../models/user.model'),
     Role: require('../models/role.model'),
     Permission: require('../models/permission.model'),
+    Message: require('../models/message.model'),
+    Conversation: require('../models/conversation.model'),
 };
