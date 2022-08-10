@@ -9,6 +9,8 @@ const messengerControllers = require('./controllers/messenger.controller')
 const dotenv = require('dotenv').config;
 const http = require('http');
 const useSocket = require("socket.io");
+const { Conversation, Message } = require('./helpers/db');
+const _ = require('lodash');
 
 const app = express();
 dotenv();
@@ -30,10 +32,41 @@ const io = useSocket(server, {
 });
 
 io.on('connection', (socket) => {
-  socket.on('CONVERSATION:JOIN', (data) => {
-    console.log(data);
+  socket.on('CONVERSATION:NEW_MESSAGE', async (data) => {
+    let { conversationId, from, to, text, date } = data;
+
+    if (!conversationId) {
+      const fromToConnection = await Conversation.findOne({ from, to });
+
+      if (_.isEmpty(fromToConnection)) {
+        const toFromConnection = await Conversation.findOne({ from: to, to: from });
+        if (_.isEmpty(toFromConnection)) {
+          const conversation = new Conversation({ from, to });
+          conversationId = conversation.conversationId;
+          await conversation.save();
+        } else {
+          conversationId = toFromConnection.conversationId;
+          const conversation = new Conversation({ from, to, conversationId });
+          await conversation.save();
+        }
+      } else {
+        conversationId = fromToConnection.conversationId;
+      }
+    }
+
+    const conversation = await Conversation.findOne({ conversationId });
+    const message = new Message({
+      text,
+      date,
+      conversation,
+    });
+
+    await message.save();
+
+    const response = { ...data, _id: message._id };
+
+    socket.broadcast.emit('CONVERSATION:NEW_MESSAGE', response);
   });
-  console.log('socket connection');
 });
 
 server.listen(PORT, () => console.log(`Server is running in PORT ${PORT}`));

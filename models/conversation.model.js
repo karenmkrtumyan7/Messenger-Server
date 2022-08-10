@@ -1,11 +1,9 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model, Types } = require('mongoose');
 
 const Conversation = new Schema({
-  messages: {
     from: { type: Object, ref: 'Users' },
     to: { type: Object, ref: 'Users' },
-    conversationId: { type: Schema.Types.ObjectId, default: '_id' },
-  }
+    conversationId: { type: Schema.Types.ObjectId, default: Types.ObjectId },
 });
 
 module.exports = model('Conversation', Conversation);
