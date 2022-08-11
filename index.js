@@ -11,6 +11,8 @@ const http = require('http');
 const useSocket = require("socket.io");
 const { Conversation, Message } = require('./helpers/db');
 const _ = require('lodash');
+const { Types } = require('mongoose');
+
 
 const app = express();
 dotenv();
@@ -33,28 +35,14 @@ const io = useSocket(server, {
 
 io.on('connection', (socket) => {
   socket.on('CONVERSATION:NEW_MESSAGE', async (data) => {
-    let { conversationId, from, to, text, date } = data;
+    let { conversationId, text, from, to, date } = data;
 
-    if (!conversationId) {
-      const fromToConnection = await Conversation.findOne({ from, to });
+    const conversation = await Conversation.findOne({
+      conversationId: Types.ObjectId(conversationId),
+      from: Types.ObjectId(from),
+      to: Types.ObjectId(to),
+    });
 
-      if (_.isEmpty(fromToConnection)) {
-        const toFromConnection = await Conversation.findOne({ from: to, to: from });
-        if (_.isEmpty(toFromConnection)) {
-          const conversation = new Conversation({ from, to });
-          conversationId = conversation.conversationId;
-          await conversation.save();
-        } else {
-          conversationId = toFromConnection.conversationId;
-          const conversation = new Conversation({ from, to, conversationId });
-          await conversation.save();
-        }
-      } else {
-        conversationId = fromToConnection.conversationId;
-      }
-    }
-
-    const conversation = await Conversation.findOne({ conversationId });
     const message = new Message({
       text,
       date,
@@ -64,8 +52,16 @@ io.on('connection', (socket) => {
     await message.save();
 
     const response = { ...data, _id: message._id };
+    console.log(conversationId);
+    socket.to(conversationId).emit('CONVERSATION:NEW_MESSAGE', response);
+  });
 
-    socket.broadcast.emit('CONVERSATION:NEW_MESSAGE', response);
+  socket.on('CONVERSATION:JOIN', async (userId) => {
+    const conversations = await Conversation.find({ from: Types.ObjectId(userId) });
+    conversations?.forEach(conversation => {
+      socket.join(conversation.conversationId);
+      console.log(conversation.conversationId);
+    })
   });
 });
 
