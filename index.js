@@ -12,8 +12,6 @@ const useSocket = require("socket.io");
 const { Conversation, Message } = require('./helpers/db');
 const _ = require('lodash');
 const { Types } = require('mongoose');
-
-
 const app = express();
 dotenv();
 
@@ -52,15 +50,13 @@ io.on('connection', (socket) => {
     await message.save();
 
     const response = { ...data, _id: message._id };
-    console.log(conversationId);
-    socket.to(conversationId).emit('CONVERSATION:NEW_MESSAGE', response);
+    io.to(conversationId).emit('CONVERSATION:NEW_MESSAGE', response);
   });
 
   socket.on('CONVERSATION:JOIN', async (userId) => {
     const conversations = await Conversation.find({ from: Types.ObjectId(userId) });
     conversations?.forEach(conversation => {
-      socket.join(conversation.conversationId);
-      console.log(conversation.conversationId);
+      socket.join(conversation.conversationId.toString());
     })
   });
 });
