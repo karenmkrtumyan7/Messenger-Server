@@ -33,6 +33,8 @@ const io = useSocket(server, {
 
 io.on('connection', (socket) => {
   socket.on('CONVERSATION:NEW_MESSAGE', async (data) => {
+    console.log('socket');
+
     let { conversationId, text, from, to, date } = data;
 
     const conversation = await Conversation.findOne({
@@ -58,6 +60,13 @@ io.on('connection', (socket) => {
     conversations?.forEach(conversation => {
       socket.join(conversation.conversationId.toString());
     })
+  });
+
+  socket.on('CONVERSATION:MESSAGE_SEEN', async (conversationIds) => {
+    await Message.findOneAndUpdate(
+      {conversationId: { $in: conversationIds }},
+      {seen: true},
+    );
   });
 });
 
