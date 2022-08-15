@@ -69,14 +69,40 @@ async function getMembers(req) {
   return response;
 }
 
-async function messageSeen(req) {
-  const messages = await Message.findOneAndUpdate(
-    {conversationId: { $in: req.conversationIds }},
-    {seen: true},
-  )
+async function getUserNotSeenMessagesCount(req) {
+  const messages = await Message.find(
+    {seen: false},
+  ).populate({
+    path: 'conversation',
+    match: { to: Types.ObjectId(req.userId) },
+  });
+
+  const notSeenMessages = messages.filter(message => message.conversation);
+  const group = _.groupBy(notSeenMessages, 'conversation.conversationId');
+  const response = [];
+  _.forIn(group, (value, key) => {
+    const ids = value.map(obj => obj._id);
+    response.push({
+      conversationId: key,
+      count: value.length,
+      ids,
+    })
+  });
+  return response;
+}
+
+async function messagesGetSeen(req) {
+  const { messageIds } = req.body;
+  console.log(messageIds);
+
+  await Message.find({_id: { $in: messageIds }}).updateMany({ seen: true });
+
+  return;
 }
 
 module.exports = {
   getMessages,
   getMembers,
+  getUserNotSeenMessagesCount,
+  messagesGetSeen,
 }

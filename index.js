@@ -46,6 +46,7 @@ io.on('connection', (socket) => {
     const message = new Message({
       text,
       date,
+      seen: false,
       conversation,
     });
 
@@ -60,13 +61,6 @@ io.on('connection', (socket) => {
     conversations?.forEach(conversation => {
       socket.join(conversation.conversationId.toString());
     })
-  });
-
-  socket.on('CONVERSATION:MESSAGE_SEEN', async (conversationIds) => {
-    await Message.findOneAndUpdate(
-      {conversationId: { $in: conversationIds }},
-      {seen: true},
-    );
   });
 });
 
