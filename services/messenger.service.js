@@ -63,7 +63,7 @@ async function getMembers(req) {
       date: lastMessage?.date,
     }
   }).sort((r1, r2) => {
-    return moment(r2.date) - moment(r1.date);
+    return moment(r2.date || 0) - moment(r1.date || 0);
   });
 
   return response;
