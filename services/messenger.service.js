@@ -93,10 +93,7 @@ async function getUserNotSeenMessagesCount(req) {
 
 async function messagesGetSeen(req) {
   const { messageIds } = req.body;
-  console.log(messageIds);
-
   await Message.find({_id: { $in: messageIds }}).updateMany({ seen: true });
-
   return;
 }
 

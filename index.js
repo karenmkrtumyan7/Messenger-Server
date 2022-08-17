@@ -33,10 +33,7 @@ const io = useSocket(server, {
 
 io.on('connection', (socket) => {
   socket.on('CONVERSATION:NEW_MESSAGE', async (data) => {
-    console.log('socket');
-
     let { conversationId, text, from, to, date } = data;
-
     const conversation = await Conversation.findOne({
       conversationId: Types.ObjectId(conversationId),
       from: Types.ObjectId(from),
@@ -54,6 +51,7 @@ io.on('connection', (socket) => {
 
     const response = { ...data, _id: message._id };
     io.to(conversationId).emit('CONVERSATION:NEW_MESSAGE', response);
+    socket.broadcast.to(conversationId).emit('CONVERSATION:TYPING_RESET', conversationId);
   });
 
   socket.on('CONVERSATION:JOIN', async (userId) => {
@@ -61,6 +59,19 @@ io.on('connection', (socket) => {
     conversations?.forEach(conversation => {
       socket.join(conversation.conversationId.toString());
     })
+  });
+
+  socket.on('CONVERSATION:TYPING', (conversationId) => {
+    socket.broadcast.to(conversationId).emit('CONVERSATION:TYPING', conversationId);
+  });
+
+  socket.on('CONVERSATION:TYPING_RESET', (conversationId) => {
+    socket.broadcast.to(conversationId).emit('CONVERSATION:TYPING_RESET', conversationId);
+  });
+
+  socket.on('CONVERSATION:MESSAGE_DELETE', async (message) => {
+    await Message.deleteOne({ _id: message._id });
+    io.to(message.conversationId).emit('CONVERSATION:MESSAGE_DELETE', message._id);
   });
 });
 
