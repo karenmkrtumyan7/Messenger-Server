@@ -11,18 +11,11 @@ router.delete('/:id', verifyJWT, deleteUser);
 router.put('/:id', verifyJWT, editUser);
 router.get('/details', verifyJWT, getUserDetails);
 router.get('/:id', getUser);
-router.post('/avatar', upload.single('avatar'),(req, res, next) => {
-    console.log(123);
+router.post('/avatar', verifyJWT, upload.single('file'),(req, res, next) => {
     return res.json({
         image: req.file.path
     });
 });
-
-// function createAvatar(req, res) {
-//     userService.createAvatar(req, res)
-//       .then(data => res.json(data))
-//       .catch(err => res.status(404).json(err));
-// }
 
 function getPermissions(req, res) {
     userService.getPermissions(req, res)

@@ -21,6 +21,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/auth', authControllers);
 app.use('/users', userControllers);
 app.use('/messenger', messengerControllers);
+app.use('/upload/avatars', express.static('./upload/avatars'));
 app.use(errorHandler);
 
 const PORT = process.env.PORT;
