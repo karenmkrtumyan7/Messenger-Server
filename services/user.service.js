@@ -179,6 +179,11 @@ async function getPermissions(req, res) {
     }
 }
 
+function createAvatar() {
+
+}
+
+
 module.exports = {
     getUserDetails,
     getUsers,

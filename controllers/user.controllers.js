@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userService = require('../services/user.service');
 const verifyJWT = require('../middlewares/auth.middleware');
+const upload = require('../helpers/upload');
 
 router.put('/:id/updatePermissions', updatePermissions);
 router.get('/:id/updatePermissions', getPermissions);
@@ -10,7 +11,18 @@ router.delete('/:id', verifyJWT, deleteUser);
 router.put('/:id', verifyJWT, editUser);
 router.get('/details', verifyJWT, getUserDetails);
 router.get('/:id', getUser);
+router.post('/avatar', upload.single('avatar'),(req, res, next) => {
+    console.log(123);
+    return res.json({
+        image: req.file.path
+    });
+});
 
+// function createAvatar(req, res) {
+//     userService.createAvatar(req, res)
+//       .then(data => res.json(data))
+//       .catch(err => res.status(404).json(err));
+// }
 
 function getPermissions(req, res) {
     userService.getPermissions(req, res)

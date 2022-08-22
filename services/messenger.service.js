@@ -23,17 +23,32 @@ async function getMembers(req) {
   const { id } = req.params;
   const users = await User.find({_id: {$ne: Types.ObjectId(id)}}).select('_id userName');
   let conversations = await Conversation.find({ from: Types.ObjectId(id) });
+
   const usersWithoutConversationId = users.filter((user, i) => {
     return !conversations[i]?.conversationId;
   }).map(user => user._id);
+
+
 
   if (!_.isEmpty(usersWithoutConversationId)) {
     for (let i = 0; i < usersWithoutConversationId.length; i++) {
       const { userId } = req;
       const from = Types.ObjectId(userId);
       const to = usersWithoutConversationId[i];
-      const conversationFromTo = new Conversation({ from, to });
-      const conversationToFrom = new Conversation({ from: to, to: from, conversationId: conversationFromTo.conversationId });
+      const details = await User.find({ _id: [from, to] }).select('-password').find()
+        .populate({
+          select: '-password',
+          path: 'role',
+          select: 'value isAdmin -_id',
+          populate: {
+            path: 'permissions',
+            select: '-_id'
+          }
+        });
+      const visibility = details[0].role.value !== 'User' ||
+        (details[0].role.value === details[1].role.value && details[0].role.value === 'User');
+      const conversationFromTo = new Conversation({ from, to,visibility });
+      const conversationToFrom = new Conversation({ from: to, to: from, conversationId: conversationFromTo.conversationId, visibility });
       await conversationFromTo.save();
       await conversationToFrom.save();
     }
@@ -48,6 +63,16 @@ async function getMembers(req) {
     match: { conversationId: { $in: conversationIds } },
   });
 
+  const role = (await User.findById(req.userId).select('-password').find()
+    .populate({
+      select: '-password',
+      path: 'role',
+      select: 'value isAdmin -_id',
+      populate: {
+        path: 'permissions',
+        select: '-_id'
+      }
+    }))[0].role.value;
 
   const response = users.map((user, i) => {
     const lastMessage = _.findLast(lastMessages, (message) => {
@@ -59,10 +84,11 @@ async function getMembers(req) {
       userName: user.userName,
       avatar: user.avatar,
       conversationId: conversations[i]?.conversationId,
+      visibility: conversations[i]?.visibility,
       text: lastMessage?.text,
       date: lastMessage?.date,
     }
-  }).sort((r1, r2) => {
+  }).filter(({visibility}) => visibility || role !== 'User').sort((r1, r2) => {
     return moment(r2.date || 0) - moment(r1.date || 0);
   });
 

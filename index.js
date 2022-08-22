@@ -9,7 +9,7 @@ const messengerControllers = require('./controllers/messenger.controller')
 const dotenv = require('dotenv').config;
 const http = require('http');
 const useSocket = require("socket.io");
-const { Conversation, Message } = require('./helpers/db');
+const { Conversation, Message, User} = require('./helpers/db');
 const _ = require('lodash');
 const { Types } = require('mongoose');
 const app = express();
@@ -39,6 +39,19 @@ io.on('connection', (socket) => {
       from: Types.ObjectId(from),
       to: Types.ObjectId(to),
     });
+
+    const userDetails = await User.findOne({ _id: from })
+      .find()
+      .populate({
+        path: 'role',
+        select: 'value',
+      });
+
+    if (userDetails[0]?.role?.value !== 'User' && !conversation.visibility) {
+      await Conversation.find({
+        conversationId: Types.ObjectId(conversationId),
+      }).updateMany({ visibility: true });
+    }
 
     const message = new Message({
       text,

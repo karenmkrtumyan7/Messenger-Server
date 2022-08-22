@@ -7,7 +7,7 @@ module.exports = async (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = await jwt.verify(token, process.env.JWT_SECRET);
     const { userId, role } = decodedToken;
-
+    
     if (req.params.userid && req.params.userid !== userId) {
       throw 'Invalid request';
     } else {
